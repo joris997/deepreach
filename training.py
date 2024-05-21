@@ -1,9 +1,13 @@
 '''Implements a generic training loop.
 '''
 
-import torch
-import utils
 from torch.utils.tensorboard import SummaryWriter
+# writer = SummaryWriter("/home/none/blabla")
+import torch
+torch.cuda.empty_cache()
+print(torch.cuda.memory_summary(device=None, abbreviated=False))
+import utils
+
 from tqdm.autonotebook import tqdm
 import time
 import numpy as np
@@ -43,12 +47,14 @@ def train(model, train_dataloader, epochs, lr, steps_til_summary, epochs_til_che
 
     summaries_dir = os.path.join(model_dir, 'summaries')
     utils.cond_mkdir(summaries_dir)
-
+    
     checkpoints_dir = os.path.join(model_dir, 'checkpoints')
     utils.cond_mkdir(checkpoints_dir)
-
-    writer = SummaryWriter(summaries_dir)
-
+    print("Calling SummaryWriter with %s"%summaries_dir)
+    # writer = SummaryWriter(summaries_dir)
+    # writer = SummaryWriter("/home/none/Documents/code/reachability/deepreach/logs/air3d/summaries/")
+    print("SummaryWriter called successfully.")
+    
     total_steps = 0
     with tqdm(total=len(train_dataloader) * epochs) as pbar:
         train_losses = []
@@ -100,14 +106,14 @@ def train(model, train_dataloader, epochs, lr, steps_til_summary, epochs_til_che
                     single_loss = loss.mean()
 
                     if loss_schedules is not None and loss_name in loss_schedules:
-                        writer.add_scalar(loss_name + "_weight", loss_schedules[loss_name](total_steps), total_steps)
+                        # writer.add_scalar(loss_name + "_weight", loss_schedules[loss_name](total_steps), total_steps)
                         single_loss *= loss_schedules[loss_name](total_steps)
 
-                    writer.add_scalar(loss_name, single_loss, total_steps)
+                    # writer.add_scalar(loss_name, single_loss, total_steps)
                     train_loss += single_loss
 
                 train_losses.append(train_loss.item())
-                writer.add_scalar("total_train_loss", train_loss, total_steps)
+                # writer.add_scalar("total_train_loss", train_loss, total_steps)
 
                 if not total_steps % steps_til_summary:
                     torch.save(model.state_dict(),
@@ -141,7 +147,7 @@ def train(model, train_dataloader, epochs, lr, steps_til_summary, epochs_til_che
                                 val_loss = loss_fn(model_output, gt)
                                 val_losses.append(val_loss)
 
-                            writer.add_scalar("val_loss", np.mean(val_losses), total_steps)
+                            # writer.add_scalar("val_loss", np.mean(val_losses), total_steps)
                         model.train()
 
                 total_steps += 1

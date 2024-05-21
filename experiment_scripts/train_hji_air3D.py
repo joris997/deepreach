@@ -19,7 +19,7 @@ p = configargparse.ArgumentParser()
 p.add('-c', '--config_filepath', required=False, is_config_file=True, help='Path to config file.')
 
 p.add_argument('--logging_root', type=str, default='./logs', help='root for logging')
-p.add_argument('--experiment_name', type=str, required=True,
+p.add_argument('--experiment_name', type=str, default='air3d', #required=True,
                help='Name of subdirectory in logging_root where summaries and checkpoints will be saved.')
 
 # General training options
@@ -69,7 +69,8 @@ if opt.counter_start == -1:
 if opt.counter_end == -1:
   opt.counter_end = opt.num_epochs
 
-dataset = dataio.ReachabilityAir3DSource(numpoints=65000, collisionR=opt.collisionR, velocity=opt.velocity, 
+# numpoints was 65000, but got CUDA GPU memory issues: lowered fixed this (apparently lowering batch size could help as well)
+dataset = dataio.ReachabilityAir3DSource(numpoints=6500, collisionR=opt.collisionR, velocity=opt.velocity, 
                                           omega_max=opt.omega_max, pretrain=opt.pretrain, tMin=opt.tMin,
                                           tMax=opt.tMax, counter_start=opt.counter_start, counter_end=opt.counter_end,
                                           pretrain_iters=opt.pretrain_iters, seed=opt.seed,
@@ -134,6 +135,8 @@ def val_fn(model, ckpt_dir, epoch):
       fig.colorbar(s) 
 
   fig.savefig(os.path.join(ckpt_dir, 'BRS_validation_plot_epoch_%04d.png' % epoch))
+  # Close fig! (otherwise limited by 20 open figs, gives matplotlib warning)
+  plt.close(fig)
   
 
 training.train(model=model, train_dataloader=dataloader, epochs=opt.num_epochs, lr=opt.lr,

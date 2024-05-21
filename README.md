@@ -12,6 +12,7 @@ You can then set up a conda environment with all dependencies like so:
 ```
 conda env create -f environment.yml
 conda activate siren
+conda install pytorch==1.9.1 torchvision==0.10.1 torchaudio==0.9.1 cudatoolkit=10.2 -c pytorch
 ```
 
 ## High-Level structure
